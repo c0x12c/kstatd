@@ -1,0 +1,5 @@
+import dev.spartan.Dependencies
+
+dependencies {
+  implementation(Dependencies.Kotlin.stdlib)
+}
