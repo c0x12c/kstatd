@@ -1,0 +1,9 @@
+import dev.spartan.Dependencies
+
+dependencies {
+  api(project(":module-api"))
+  api(Dependencies.Metrics.dogStatsd)
+
+  testImplementation(Dependencies.Testing.jupiter)
+  testImplementation(Dependencies.Testing.mockk)
+}

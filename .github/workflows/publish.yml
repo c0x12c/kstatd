@@ -1,0 +1,116 @@
+name: Publish to SonaType
+
+on:
+  push:
+    branches: ["release/*"]
+    paths-ignore:
+      - 'manifest.json'
+  workflow_dispatch:
+
+env:
+  SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+  SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+#  PROJECT_URL: ${{ secrets.PROJECT_URL }}
+  SERVICE_NAME: kstatd
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 3
+          token: ${{ secrets.PAT }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Extract Signing Secret Key Ring
+        run: |
+          mkdir -p ~/.gradle
+          echo "${{ secrets.SECRET_KEY_RING_BASE64 }}" | base64 -decode >> ~/.gradle/secring.gpg
+
+      - name: Nexus Repo Publish
+        run: |
+          ./gradlew -Prelease publishToSonatype closeAndReleaseSonatypeStagingRepository
+
+#      - name: "Extract Git info"
+#        run: |
+#          echo "GITHUB_AUTHOR=$(git log -1 --pretty=format:'%an <%ae>' | xargs)" >> $GITHUB_ENV
+#          echo "GITHUB_REVISION=$(git rev-parse HEAD)" >> $GITHUB_ENV
+#          echo "GITHUB_REPO=$(git config --get remote.origin.url)" >> $GITHUB_ENV
+#
+#          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+#          GITHUB_COMMITS=$(git --no-pager log --pretty=format:'%h (%an) %s' -n3 --no-color |  while read line || [ -n "$line" ]; do echo -n "- $line \\n"; done)
+#          echo "GITHUB_COMMITS<<$EOF" >> "$GITHUB_ENV"
+#          echo $GITHUB_COMMITS | sed "s/\"/'/g" >> "$GITHUB_ENV"
+#          echo "$EOF" >> "$GITHUB_ENV"
+#
+#      - name: Slack Notification
+#        id: slack
+#        uses: slackapi/slack-github-action@v1
+#        with:
+#          payload: |
+#            {
+#              "channel": "${{ env.SLACK_CHANNEL }}",
+#              "blocks": [
+#                {
+#                  "type": "section",
+#                  "text": {
+#                    "type": "mrkdwn",
+#                    "text": ":rocket: *${{ github.event.repository.name }} - Deployed to DEV*"
+#                  }
+#                },{
+#                  "type": "section",
+#                  "text": {
+#                    "type": "mrkdwn",
+#                    "text": "*Created by:* ${{ env.GITHUB_AUTHOR }}"
+#                  }
+#                },
+#                {
+#                  "type": "section",
+#                  "text": {
+#                    "type": "mrkdwn",
+#                    "text": "```${{ env.GITHUB_COMMITS }}```"
+#                  }
+#                },
+#                {
+#                  "type": "actions",
+#                  "elements": [
+#                    {
+#                      "type": "button",
+#                      "text": {
+#                        "type": "plain_text",
+#                        "text": "View changes"
+#                      },
+#                      "style": "primary",
+#                      "url": "${{ env.GITHUB_REPO }}/commit/${{ env.GITHUB_REVISION}}"
+#                    },
+#                    {
+#                      "type": "button",
+#                      "text": {
+#                        "type": "plain_text",
+#                        "text": "View Site"
+#                      },
+#                      "style": "primary",
+#                      "url": "${{ env.PROJECT_URL }}"
+#                    }
+#                  ]
+#                }
+#              ]
+#            }
+#        env:
+#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
