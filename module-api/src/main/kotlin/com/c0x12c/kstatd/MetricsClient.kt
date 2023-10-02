@@ -339,7 +339,7 @@ interface MetricsClient : Closeable {
         // NOOP
       }
 
-      override fun count(metrics: Metric<*>, delta: Double, vararg dimensions: MetricDimension) {
+      override fun count(metric: Metric<*>, delta: Double, vararg dimensions: MetricDimension) {
         // NOOP
       }
 
