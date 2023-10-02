@@ -5,6 +5,9 @@ plugins {
   id("io.github.gradle-nexus.publish-plugin")
 }
 
+group = "com.c0x12c.kstatd"
+version = "1.0.0"
+
 repositories {
   mavenCentral()
 }
@@ -26,7 +29,7 @@ subprojects { p ->
   apply(plugin: "maven-publish")
   apply(plugin: "signing")
 
-  group = "com.c0x12c.exposed.postgis"
+  group = "com.c0x12c.kstatd"
   version = "1.0.0"
 
   repositories {
@@ -64,7 +67,7 @@ subprojects { p ->
       mavenJava(MavenPublication) {
         from(components["java"])
         afterEvaluate {
-          artifactId = p.name
+          artifactId = p.name.replace("module-", "")
           group = group
           version = version
         }
@@ -98,4 +101,3 @@ subprojects { p ->
     sign publishing.publications["mavenJava"]
   }
 }
-
