@@ -5,8 +5,16 @@ plugins {
   id("io.github.gradle-nexus.publish-plugin")
 }
 
-group = "com.c0x12c.kstatd"
-version = "1.0.2"
+def GROUP = "com.c0x12c.kstatd"
+def RELEASE_VERSION = "1.0.0"
+
+if (System.getenv("RELEASE_VERSION") != null) {
+  RELEASE_VERSION = System.getenv("RELEASE_VERSION")
+  println("Release version: $RELEASE_VERSION")
+}
+
+group = GROUP
+version = RELEASE_VERSION
 
 repositories {
   mavenCentral()
@@ -29,8 +37,8 @@ subprojects { p ->
   apply(plugin: "maven-publish")
   apply(plugin: "signing")
 
-  group = "com.c0x12c.kstatd"
-  version = "1.0.2"
+  group = GROUP
+  version = RELEASE_VERSION
 
   repositories {
     mavenCentral()
